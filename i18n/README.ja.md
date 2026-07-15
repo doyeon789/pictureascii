@@ -34,11 +34,11 @@ python -m pip install -e .
 ## 基本的な使い方
 
 ```bash
-pictureascii picture.png
-pictureascii picture.png --width 200
+pascii picture.png
+pascii picture.png --width 200
 ```
 
-結果は元画像と同じ場所の`picture.txt`に保存されます。
+`pascii`は`pictureascii`の短いエイリアスで、どちらも同じように動作します。結果は元画像と同じ場所の`picture.txt`に保存されます。
 
 ## カラー出力とPNG保存
 

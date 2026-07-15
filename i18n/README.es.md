@@ -34,11 +34,11 @@ python -m pip install -e .
 ## Uso básico
 
 ```bash
-pictureascii picture.png
-pictureascii picture.png --width 200
+pascii picture.png
+pascii picture.png --width 200
 ```
 
-El resultado se guarda como `picture.txt` junto a la imagen original.
+`pascii` es el alias corto de `pictureascii`; ambos comandos funcionan igual. El resultado se guarda como `picture.txt` junto a la imagen original.
 
 ## Color y exportación PNG
 
