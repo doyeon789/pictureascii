@@ -8,6 +8,13 @@
 - 문자 팔레트, 셀 크기, 배경색 및 글자색 설정
 - 투명 배경과 PNG 해상도 지정
 
+## 샘플 바로가기
+
+- [원본 이미지](https://github.com/doyeon789/pictureascii/tree/main/example/images/sample.png)
+- [ASCII 텍스트 (github폰트 호환 문제로 이미지 비율이 다를 수 있음)](https://github.com/doyeon789/pictureascii/tree/main/example/outputs/sample.txt)
+- [일반 ASCII 이미지](https://github.com/doyeon789/pictureascii/tree/main/example/outputs/sample_plain.png)
+- [컬러 ASCII 이미지](https://github.com/doyeon789/pictureascii/tree/main/example/outputs/sample_color.png)
+
 ## 설치
 
 Python 3.10 이상이 필요합니다.
