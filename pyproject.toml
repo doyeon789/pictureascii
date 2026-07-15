@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pictureascii"
+version = "0.1.1"
+description = "Convert images into plain or colored ASCII art in the terminal, text, and PNG formats."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "Pillow>=9.1",
+]
+keywords = ["ascii", "ascii-art", "image", "terminal", "cli"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+]
+
+[project.scripts]
+pictureascii = "pictureascii.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
