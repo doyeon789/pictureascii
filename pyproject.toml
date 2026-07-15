@@ -27,6 +27,7 @@ classifiers = [
 
 [project.scripts]
 pictureascii = "pictureascii.cli:main"
+pascii = "pictureascii.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
