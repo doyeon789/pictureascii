@@ -8,8 +8,8 @@ import re
 from PIL import Image, ImageDraw, ImageFont, UnidentifiedImageError
 
 
-# 왼쪽일수록 어둡고, 오른쪽일수록 밝게 보이는 문자
-# 문자열에 실제 역슬래시(\)를 넣기 위해 "\\"로 작성합니다.
+# Characters progress from dark on the left to light on the right.
+# The backslash is escaped so the palette contains a literal backslash.
 ASCII_CHARS = (
     "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/"
     "\\|?-_+~<>i!lI;:,\"^`'.    "
@@ -17,30 +17,29 @@ ASCII_CHARS = (
 
 DEFAULT_WIDTH = 120
 
-# 터미널 문자는 일반적으로 세로가 더 길기 때문에 높이를 보정합니다.
-# 결과가 세로로 길면 줄이고, 너무 납작하면 늘리세요.
+# Compensate for terminal characters being taller than they are wide.
+# Decrease this value for tall output or increase it for flat output.
 CHAR_ASPECT_RATIO = 0.5
 
-# 1.0이면 원본 RGB를 그대로 사용합니다.
+# A value of 1.0 preserves the source RGB values.
 DEFAULT_COLOR_SCALE = 1.0
 
-# 대부분의 터미널은 어두운 배경을 기본으로 쓰기 때문에,
-# 밝은 부분이 촘촘한 문자로 채워지도록 기본값을 반전(True)으로 둡니다.
-# 밝은 배경 터미널을 쓴다면 --no-invert로 끄세요.
+# Most terminals use a dark background, so inversion is enabled by default
+# to render bright areas with dense characters. Use --no-invert on light backgrounds.
 DEFAULT_INVERT = True
 
-# 이미지로 저장할 때 사용하는 폰트 크기(포인트 단위)입니다.
+# Font size in points used when rendering images.
 DEFAULT_IMAGE_FONT_SIZE = 14
 
-# PNG로 저장할 때 각 문자 셀 안에 둘 여백(픽셀)입니다.
+# Padding in pixels inside each character cell in saved PNG files.
 DEFAULT_CHARACTER_PADDING = 0
 
-# 저장 PNG에서 ASCII 문자 하나가 차지하는 픽셀 셀 크기입니다.
+# Pixel dimensions of one ASCII character cell in saved PNG files.
 DEFAULT_CHARACTER_CELL_WIDTH = 10
 DEFAULT_CHARACTER_CELL_HEIGHT = 14
 
-# 이미지 렌더링에 사용할 모노스페이스 폰트 후보 경로입니다.
-# 위에서부터 순서대로 찾아보고, 하나도 없으면 PIL 기본 폰트로 대체합니다.
+# Candidate monospace fonts, searched in order. Pillow's default font is used
+# when none of these files are available.
 MONOSPACE_FONT_CANDIDATES = (
     "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
     "/usr/share/fonts/dejavu/DejaVuSansMono.ttf",
@@ -53,26 +52,24 @@ MONOSPACE_FONT_CANDIDATES = (
 
 ANSI_RESET = "\033[0m"
 
-# rgb_to_ansi()가 만드는 24비트 전경색 코드와 리셋 코드를 다시 읽어내기 위한 패턴입니다.
+# Matches the 24-bit foreground colors and reset codes produced by rgb_to_ansi().
 ANSI_COLOR_PATTERN = re.compile(
     r"\033\[38;2;(\d+);(\d+);(\d+)m|\033\[0m"
 )
 
 
 def enable_windows_ansi() -> None:
-    """
-    일부 Windows 콘솔에서 ANSI 색상 출력을 활성화합니다.
-    """
+    """Enable ANSI color output in Windows consoles that require activation."""
     if os.name == "nt":
         os.system("")
 
 
 def open_image(image_path: str) -> Image.Image:
     """
-    이미지 파일을 열고 RGB 형식으로 변환합니다.
+    Open an image and convert it to RGB.
 
-    투명한 PNG 이미지는 검은색이 아니라
-    흰색 배경 위에 합성합니다.
+    Composite transparent images over white instead of allowing transparent
+    pixels to become black during conversion.
     """
     image = Image.open(image_path).convert("RGBA")
 
@@ -92,24 +89,22 @@ def resize_image(
     output_width: int,
     char_aspect_ratio: float = CHAR_ASPECT_RATIO,
 ) -> Image.Image:
-    """
-    원본 이미지의 비율을 유지하면서 크기를 조절합니다.
-    """
+    """Resize an image while preserving its aspect ratio."""
     if output_width < 10:
         raise ValueError(
-            "출력 가로 크기는 10 이상이어야 합니다."
+            "Output width must be at least 10."
         )
 
     if char_aspect_ratio <= 0:
         raise ValueError(
-            "문자 비율 보정값은 0보다 커야 합니다."
+            "Character aspect-ratio correction must be greater than 0."
         )
 
     original_width, original_height = image.size
 
     if original_width <= 0 or original_height <= 0:
         raise ValueError(
-            "이미지 크기가 올바르지 않습니다."
+            "Image dimensions must be greater than 0."
         )
 
     image_ratio = original_height / original_width
@@ -135,9 +130,9 @@ def brightness_to_character(
     characters: str = ASCII_CHARS,
 ) -> str:
     """
-    0~255 범위의 밝기를 아스키 문자로 변환합니다.
+    Convert a brightness value from 0 to 255 into an ASCII character.
 
-    0은 검은색이고 255는 흰색입니다.
+    Zero represents black and 255 represents white.
     """
     characters = (
         characters[::-1]
@@ -159,9 +154,7 @@ def rgb_to_ansi(
     green: int,
     blue: int,
 ) -> str:
-    """
-    RGB 값을 ANSI 24비트 전경색 코드로 변환합니다.
-    """
+    """Convert an RGB value into a 24-bit ANSI foreground color code."""
     return f"\033[38;2;{red};{green};{blue}m"
 
 
@@ -170,15 +163,14 @@ def scale_rgb(
     color_scale: float,
 ) -> tuple[int, int, int]:
     """
-    RGB 밝기를 배율에 따라 조절합니다.
+    Scale RGB brightness by a multiplier.
 
-    1.0: 원본 색상
-    0.8: 원본보다 20% 어둡게
-    1.1: 원본보다 10% 밝게
+    1.0 preserves the source color, 0.8 is 20% darker, and 1.1 is 10%
+    brighter.
     """
     if color_scale < 0:
         raise ValueError(
-            "색상 밝기 배율은 0 이상이어야 합니다."
+            "Color brightness scale must be at least 0."
         )
 
     red, green, blue = rgb
@@ -200,7 +192,7 @@ def scale_rgb(
 
 
 def parse_hex_color(value: str) -> tuple[int, int, int]:
-    """#RGB 또는 #RRGGBB 형식의 색상을 RGB 튜플로 변환합니다."""
+    """Convert a #RGB or #RRGGBB color into an RGB tuple."""
     color = value.lstrip("#")
 
     if len(color) == 3:
@@ -208,7 +200,7 @@ def parse_hex_color(value: str) -> tuple[int, int, int]:
 
     if len(color) != 6:
         raise ValueError(
-            "색상은 #RGB 또는 #RRGGBB 형식이어야 합니다."
+            "Color must use the #RGB or #RRGGBB format."
         )
 
     try:
@@ -218,8 +210,18 @@ def parse_hex_color(value: str) -> tuple[int, int, int]:
         )
     except ValueError as error:
         raise ValueError(
-            "색상에는 0~9와 A~F만 사용할 수 있습니다."
+            "Color values may only contain hexadecimal digits (0-9 and A-F)."
         ) from error
+
+
+def _get_flattened_pixels(image: Image.Image) -> list:
+    """Return image pixels using the API available in the installed Pillow."""
+    get_flattened_data = getattr(image, "get_flattened_data", None)
+
+    if get_flattened_data is not None:
+        return list(get_flattened_data())
+
+    return list(image.getdata())
 
 
 def image_to_ascii(
@@ -230,22 +232,18 @@ def image_to_ascii(
     characters: str = ASCII_CHARS,
 ) -> str:
     """
-    이미지의 밝기를 아스키 문자로 변환합니다.
+    Convert image brightness values into ASCII characters.
 
-    color=True일 때는 축소된 원본 이미지의
-    RGB 색상을 각 문자에 그대로 적용합니다.
+    When color is true, apply each resized source pixel's RGB value to its
+    corresponding character.
 
-    image는 이미 RGB 모드로 전달된다고 가정합니다
-    (open_image에서 변환이 끝난 상태).
-    color=False일 때는 RGB 픽셀을 읽지 않아
-    불필요한 연산을 피합니다.
+    The image is expected to already be in RGB mode after open_image(). RGB
+    pixels are not read when color is false, avoiding unnecessary work.
     """
-    grayscale_pixels = list(
-        image.convert("L").getdata()
-    )
+    grayscale_pixels = _get_flattened_pixels(image.convert("L"))
 
     rgb_pixels = (
-        list(image.getdata())
+        _get_flattened_pixels(image)
         if color
         else None
     )
@@ -281,7 +279,7 @@ def image_to_ascii(
                 color_scale=color_scale,
             )
 
-            # 같은 색이 연속될 때 ANSI 코드를 반복하지 않습니다.
+            # Avoid repeating ANSI codes for consecutive characters of one color.
             if current_color != previous_color:
                 red, green, blue = current_color
 
@@ -309,7 +307,7 @@ def create_default_output_path(
     image_path: str,
 ) -> Path:
     """
-    원본 이미지 이름으로 출력 파일 경로를 만듭니다.
+    Create an output path from the source image name.
 
     photo.jpg -> photo.txt
     images/cat.png -> images/cat.txt
@@ -321,10 +319,9 @@ def create_image_output_paths(
     base_path: Path,
 ) -> tuple[Path, Path]:
     """
-    이미지로 저장할 때 사용할 (일반 버전, 컬러 버전) 경로를 만듭니다.
+    Create output paths for the plain and color PNG variants.
 
-    base_path가 photo.txt라면
-    photo_plain.png, photo_color.png를 반환합니다.
+    For a photo.txt base path, return photo_plain.png and photo_color.png.
     """
     stem = base_path.stem
     parent = base_path.parent
@@ -339,11 +336,10 @@ def load_monospace_font(
     font_size: int,
 ) -> tuple[ImageFont.ImageFont, bool]:
     """
-    시스템에서 모노스페이스 폰트를 찾아 불러옵니다.
+    Find and load a monospace font from the system.
 
-    사용 가능한 폰트를 찾으면 (폰트, True)를,
-    하나도 찾지 못해 PIL 기본 폰트로 대체하면
-    (폰트, False)를 반환합니다.
+    Return the font and true when a candidate is available. Return Pillow's
+    default font and false when no candidate can be loaded.
     """
     for candidate in MONOSPACE_FONT_CANDIDATES:
         if not Path(candidate).exists():
@@ -357,7 +353,7 @@ def load_monospace_font(
     try:
         return ImageFont.load_default(size=font_size), False
     except TypeError:
-        # 오래된 Pillow 버전은 load_default()에 size 인자를 지원하지 않습니다.
+        # Older Pillow versions do not accept a size argument for load_default().
         return ImageFont.load_default(), False
 
 
@@ -373,11 +369,11 @@ def render_ascii_image(
     transparent: bool = False,
 ) -> None:
     """
-    아스키 아트 문자열을 PNG 이미지로 렌더링합니다.
+    Render an ASCII art string as a PNG image.
 
-    foreground를 지정하면 모든 글자를 그 색 하나로 그립니다(일반 버전용).
-    foreground가 None이면 문자열에 포함된 ANSI 24비트 색상 코드를
-    해석해서 각 글자를 원본 색상 그대로 그립니다(컬러 버전용).
+    A foreground value renders all characters in one color for plain output.
+    When foreground is None, parse embedded 24-bit ANSI codes and render each
+    character in its source color.
     """
     lines = ascii_text.split("\n")
     plain_lines = [
@@ -405,12 +401,11 @@ def render_ascii_image(
 
     if not is_truetype_font:
         print(
-            "경고: 시스템에서 모노스페이스 폰트를 찾지 못해 "
-            "기본 폰트로 이미지를 렌더링합니다. 글자 정렬이 "
-            "다소 어긋날 수 있습니다."
+            "Warning: no monospace system font was found. Rendering with "
+            "Pillow's default font; character alignment may be inaccurate."
         )
 
-    # 폰트의 실제 글자 크기를 측정해 셀 크기를 정합니다.
+    # Measure the actual glyph bounds to determine the cell size.
     left, top, right, bottom = font.getbbox("M")
     glyph_width = (right - left) or max(1, font_size * 0.6)
     glyph_height = (bottom - top) or font_size
@@ -473,7 +468,7 @@ def render_ascii_image(
             if text_segment:
                 draw_characters(text_segment)
 
-            # foreground가 지정된 일반 버전에서는 ANSI 코드를 무시합니다.
+            # Ignore ANSI codes in plain output with an explicit foreground.
             if foreground is None:
                 if match.group(1):
                     current_color = (
@@ -513,16 +508,16 @@ def save_ascii_images(
     transparent: bool = False,
 ) -> Path:
     """
-    color 설정에 맞는 일반 또는 컬러 PNG 이미지 하나를 저장합니다.
+    Save one plain or color PNG according to the color setting.
 
-    반환값은 저장된 이미지 경로입니다.
+    Return the path of the saved image.
     """
     if image_width is not None and image_width <= 0:
-        raise ValueError("저장 이미지 너비는 1 이상이어야 합니다.")
+        raise ValueError("Saved image width must be at least 1.")
     if image_height is not None and image_height <= 0:
-        raise ValueError("저장 이미지 높이는 1 이상이어야 합니다.")
+        raise ValueError("Saved image height must be at least 1.")
     if cell_width <= 0 or cell_height <= 0:
-        raise ValueError("문자 셀 크기는 1 이상이어야 합니다.")
+        raise ValueError("Character cell dimensions must be at least 1.")
 
     if image_width is not None and image_height is not None:
         target_size = (image_width, image_height)
@@ -566,9 +561,8 @@ def save_ascii_images(
         characters=characters,
     )
 
-    # invert=True는 어두운 터미널 배경을 가정하므로
-    # 이미지도 어두운 배경 + 밝은 글자로 맞춥니다.
-    # invert=False는 반대로 밝은 배경 + 어두운 글자를 씁니다.
+    # Match inverted output to a dark background with light text. Non-inverted
+    # output uses a light background with dark text.
     if invert:
         background = (18, 18, 18)
         foreground = (230, 230, 230)
@@ -622,30 +616,30 @@ def convert_image_to_ascii(
     transparent: bool = False,
 ) -> tuple[str, Path | None, Path | None]:
     """
-    이미지를 아스키 아트로 변환합니다.
+    Convert an image into ASCII art.
 
-    터미널에는 컬러 결과를 출력할 수 있지만,
-    txt 파일에는 ANSI 코드가 없는 일반 결과를 저장합니다.
+    Terminal output may contain color, but the TXT file always contains plain
+    ASCII without ANSI codes.
 
-    save_image=True이면 color 설정에 맞는 PNG 이미지도 함께 저장합니다.
+    When save_image is true, also save a PNG matching the color setting.
 
-    반환값은 (터미널 출력용 문자열, 일반 이미지 경로 또는 None,
-    컬러 이미지 경로 또는 None)입니다.
+    Return terminal text, the optional plain image path, and the optional color
+    image path.
     """
     image = open_image(image_path)
 
     if not characters:
-        raise ValueError("ASCII 문자 팔레트는 비어 있을 수 없습니다.")
+        raise ValueError("ASCII character palette cannot be empty.")
 
     if save_image:
         if cell_width <= 0 or cell_height <= 0:
-            raise ValueError("문자 셀 크기는 1 이상이어야 합니다.")
+            raise ValueError("Character cell dimensions must be at least 1.")
         if image_font_size <= 0:
-            raise ValueError("저장 이미지 폰트 크기는 1 이상이어야 합니다.")
+            raise ValueError("Saved image font size must be at least 1.")
         if image_width is not None and image_width <= 0:
-            raise ValueError("저장 이미지 너비는 1 이상이어야 합니다.")
+            raise ValueError("Saved image width must be at least 1.")
         if image_height is not None and image_height <= 0:
-            raise ValueError("저장 이미지 높이는 1 이상이어야 합니다.")
+            raise ValueError("Saved image height must be at least 1.")
 
     resized_image = resize_image(
         image=image,
@@ -653,7 +647,7 @@ def convert_image_to_ascii(
         char_aspect_ratio=char_aspect_ratio,
     )
 
-    # 텍스트 파일에 저장할 일반 아스키 아트
+    # Plain ASCII art written to the text file.
     plain_ascii_art = image_to_ascii(
         image=resized_image,
         invert=invert,
@@ -661,9 +655,7 @@ def convert_image_to_ascii(
         characters=characters,
     )
 
-    # 터미널에 출력할 결과.
-    # color=False라면 plain_ascii_art와 완전히 동일하므로
-    # 다시 계산하지 않고 그대로 재사용합니다.
+    # Reuse plain output for the terminal unless color rendering is requested.
     terminal_ascii_art = (
         plain_ascii_art
         if not color
@@ -908,27 +900,25 @@ def main() -> None:
 
     except FileNotFoundError:
         print(
-            "오류: 이미지 파일을 찾을 수 없습니다: "
+            "Error: image file not found: "
             f"{args.image}"
         )
         raise SystemExit(1)
 
     except UnidentifiedImageError:
         print(
-            "오류: 지원하지 않거나 "
-            "손상된 이미지 파일입니다."
+            "Error: the image file is unsupported or corrupted."
         )
         raise SystemExit(1)
 
     except PermissionError:
         print(
-            "오류: 이미지 또는 출력 파일에 "
-            "접근할 권한이 없습니다."
+            "Error: permission denied for the image or output file."
         )
         raise SystemExit(1)
 
     except (OSError, ValueError) as error:
-        print(f"오류: {error}")
+        print(f"Error: {error}")
         raise SystemExit(1)
 
     print(terminal_ascii_art)
@@ -938,12 +928,12 @@ def main() -> None:
 
     print()
     print(
-        f"결과를 '{output_path}' 파일에 저장했습니다."
+        f"Saved the result to '{output_path}'."
     )
 
     if args.save_image:
         saved_image_path = color_image_path or plain_image_path
-        print(f"저장한 이미지: '{saved_image_path}'")
+        print(f"Saved image: '{saved_image_path}'")
 
 
 if __name__ == "__main__":
