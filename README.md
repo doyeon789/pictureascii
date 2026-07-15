@@ -36,13 +36,13 @@ python -m pip install -e .
 ## Basic Usage
 
 ```bash
-pictureascii picture.png
+pascii picture.png
 ```
 
-The output is saved as `picture.txt` next to the source image. Change the output width with `--width`:
+`pascii` is the short alias for `pictureascii`; both commands behave identically. The output is saved as `picture.txt` next to the source image. Change the output width with `--width`:
 
 ```bash
-pictureascii picture.png --width 200
+pascii picture.png --width 200
 ```
 
 ## Color Output

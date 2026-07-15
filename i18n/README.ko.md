@@ -36,15 +36,15 @@ python -m pip install -e .
 ## 기본 사용법
 
 ```bash
-pictureascii picture.png
+pascii picture.png
 ```
 
-실행 결과는 원본 이미지와 같은 위치에 `picture.txt`로 저장됩니다.
+`pascii`는 `pictureascii`의 짧은 별칭이며 두 명령의 동작은 같습니다. 실행 결과는 원본 이미지와 같은 위치에 `picture.txt`로 저장됩니다.
 
 출력할 ASCII 아트의 가로 문자 수를 변경할 수도 있습니다.
 
 ```bash
-pictureascii picture.png --width 200
+pascii picture.png --width 200
 ```
 
 ## 컬러 출력
