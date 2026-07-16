@@ -3,4 +3,4 @@
 from .cli import convert_image_to_ascii
 
 __all__ = ["convert_image_to_ascii"]
-__version__ = "0.1.1"
+__version__ = "0.1.2"

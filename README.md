@@ -88,6 +88,10 @@ PNG width  = number of columns x cell width
 PNG height = number of rows x cell height
 ```
 
+`--image-font-size` controls the actual font size inside each cell. Choose a
+font size that fits the configured cell dimensions to avoid clipped or
+overlapping characters.
+
 ## Character Palette
 
 Use `--chars` to define the characters used for brightness levels. The leftmost character represents dark areas and the rightmost character represents bright areas.
@@ -166,6 +170,12 @@ You can also run the package as a module:
 ```bash
 python -m pictureascii picture.png --color
 ```
+
+PNG-only options such as `--cell-width`, `--background`, and
+`--image-width` require `--save-image`. `--color-scale` requires `--color`,
+and `--foreground` cannot be combined with `--color` because colored output
+uses the source image's RGB values. `--background` cannot be combined with
+`--transparent`.
 
 ## Development And Release
 
