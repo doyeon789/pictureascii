@@ -50,8 +50,8 @@ pascii picture.png --width 200
 Apply the source image's RGB colors to each character:
 
 ```bash
-pictureascii picture.png --color
-pictureascii picture.png --color --color-scale 0.8
+pascii picture.png --color
+pascii picture.png --color --color-scale 0.8
 ```
 
 Color terminal output works best in a terminal with 24-bit ANSI color support, such as Windows Terminal or PowerShell.
@@ -59,8 +59,8 @@ Color terminal output works best in a terminal with 24-bit ANSI color support, s
 ## PNG Export
 
 ```bash
-pictureascii picture.png --save-image
-pictureascii picture.png --color --save-image
+pascii picture.png --save-image
+pascii picture.png --color --save-image
 ```
 
 Generated files use these names:
@@ -103,7 +103,7 @@ Keep the space at the end of the palette for a natural brightness transition.
 Colors accept `#RGB` or `#RRGGBB` values.
 
 ```bash
-pictureascii picture.png --background "#101820" --foreground "#F2AA4C" --save-image
+pascii picture.png --background "#101820" --foreground "#F2AA4C" --save-image
 ```
 
 `--foreground` controls text color for plain PNG output. With `--color`, each character uses the source image's RGB color.
@@ -111,8 +111,8 @@ pictureascii picture.png --background "#101820" --foreground "#F2AA4C" --save-im
 ## Transparent Background
 
 ```bash
-pictureascii picture.png --transparent --save-image
-pictureascii picture.png --color --transparent --save-image
+pascii picture.png --transparent --save-image
+pascii picture.png --color --transparent --save-image
 ```
 
 ## PNG Dimensions
@@ -120,7 +120,7 @@ pictureascii picture.png --color --transparent --save-image
 Set the output PNG dimensions directly:
 
 ```bash
-pictureascii picture.png --image-width 1200 --image-height 800 --save-image
+pascii picture.png --image-width 1200 --image-height 800 --save-image
 ```
 
 - When both dimensions are set, the image is saved at that exact size.
@@ -130,7 +130,7 @@ pictureascii picture.png --image-width 1200 --image-height 800 --save-image
 ## Complete Example
 
 ```bash
-pictureascii picture.png --color --width 180 --chars "@%#*+=-:. " --cell-width 10 --cell-height 14 --image-width 1800 --transparent --save-image
+pascii picture.png --color --width 180 --chars "@%#*+=-:. " --cell-width 10 --cell-height 14 --image-width 1800 --transparent --save-image
 ```
 
 ## Options
@@ -158,7 +158,7 @@ pictureascii picture.png --color --width 180 --chars "@%#*+=-:. " --cell-width 1
 View the full command help:
 
 ```bash
-pictureascii --help
+pascii --help
 ```
 
 You can also run the package as a module:
