@@ -1,6 +1,6 @@
 # Picture ASCII
 
-[English](../README.md) | **한국어** | [日本語](README.ja.md) | [简体中文](README.zh-CN.md) | [Español](README.es.md) | [Français](README.fr.md)
+[English](../README.md) | **한국어** | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md)
 
 이미지를 ASCII 문자로 변환하는 Python 프로그램입니다.
 
@@ -24,8 +24,6 @@ Python 3.10 이상이 필요합니다.
 ```bash
 pip install pictureascii
 ```
-
-위 명령은 패키지를 PyPI에 배포한 이후부터 사용할 수 있습니다.
 
 소스에서 개발용으로 설치하려면 프로젝트 루트에서 실행합니다.
 
@@ -63,6 +61,8 @@ pictureascii picture.png --color --color-scale 0.8
 
 컬러 터미널 출력은 Windows Terminal이나 PowerShell처럼 24비트 ANSI 색상을 지원하는 터미널에서 확인하는 것이 좋습니다.
 
+`--color-scale`은 `--color`와 함께 사용해야 합니다.
+
 ## PNG 이미지 저장
 
 일반 ASCII 이미지를 저장합니다.
@@ -86,13 +86,26 @@ picture_color.png   # --color --save-image
 ```
 
 TXT 파일에는 ANSI 색상 코드가 포함되지 않은 일반 ASCII 문자열이 저장됩니다.
+PNG 전용 옵션은 `--save-image`와 함께 사용해야 합니다.
+
+## 터미널 문자 비율
+
+`--terminal-ratio`는 터미널과 TXT 출력의 문자 비율을 보정합니다.
+기존의 짧은 이름인 `--ratio`도 동일하게 사용할 수 있습니다.
+
+```bash
+pictureascii picture.png --terminal-ratio 0.6
+```
+
+이 설정은 저장되는 PNG 비율에는 적용되지 않습니다. PNG는 지정한 문자
+셀 크기를 기준으로 비율을 계산합니다.
 
 ## 문자 셀 크기
 
 PNG에서 ASCII 문자 하나가 차지하는 기본 셀 크기는 `10×14px`입니다.
 
 ```bash
-pictureascii picture.png --cell-width 8 --cell-height 12 --save-image
+pictureascii picture.png --cell-width 8 --cell-height 12 --image-font-size 10 --save-image
 ```
 
 PNG 크기를 별도로 지정하지 않으면 다음 방식으로 전체 크기를 계산합니다.
@@ -101,6 +114,9 @@ PNG 크기를 별도로 지정하지 않으면 다음 방식으로 전체 크기
 PNG 너비 = 가로 문자 수 × 셀 너비
 PNG 높이 = 세로 문자 수 × 셀 높이
 ```
+
+`--image-font-size`는 셀 안에서 실제로 사용하는 폰트 크기를 지정합니다.
+문자가 잘리거나 겹치지 않도록 셀 크기에 맞는 값을 사용하세요.
 
 ## 문자 팔레트
 
@@ -120,7 +136,8 @@ pictureascii picture.png --chars "@%#*+=-:. "
 pictureascii picture.png --background "#101820" --foreground "#F2AA4C" --save-image
 ```
 
-`--foreground`는 일반 PNG의 글자색에 적용됩니다. `--color`를 사용한 PNG는 원본 이미지의 RGB 색상을 각 문자에 적용합니다.
+`--foreground`는 일반 PNG의 글자색에 적용됩니다. 컬러 PNG는 원본 이미지의
+RGB 색상을 사용하므로 `--foreground`와 `--color`를 함께 사용할 수 없습니다.
 
 ## 투명 배경
 
@@ -133,6 +150,8 @@ pictureascii picture.png --transparent --save-image
 ```bash
 pictureascii picture.png --color --transparent --save-image
 ```
+
+`--transparent`와 `--background`는 함께 사용할 수 없습니다.
 
 ## 저장 이미지 크기 지정
 
@@ -159,18 +178,18 @@ pictureascii picture.png --color --width 180 --chars "@%#*+=-:. " --cell-width 1
 | `image` | 변환할 이미지 경로 | 필수 |
 | `-w`, `--width` | 출력 가로 문자 수 | `120` |
 | `-o`, `--output` | TXT 저장 경로 | 원본 이름 `.txt` |
-| `--ratio` | 터미널 문자 세로 비율 보정값 | `0.5` |
+| `--ratio`, `--terminal-ratio` | 터미널 및 TXT 문자 비율 보정값 | `0.5` |
 | `--invert`, `--no-invert` | 문자 명암 반전 여부 | 켜짐 |
 | `--color` | 원본 RGB 색상을 문자에 적용 | 꺼짐 |
-| `--color-scale` | 컬러 밝기 배율 | `1.0` |
+| `--color-scale` | 컬러 밝기 배율, `--color` 필요 | `1.0` |
 | `--save-image` | 현재 색상 모드의 PNG 저장 | 꺼짐 |
-| `--image-font-size` | PNG 렌더링 기준 폰트 크기 | `14` |
+| `--image-font-size` | PNG에서 사용하는 폰트 크기 | `14` |
 | `--cell-width` | 문자 셀 너비 | `10` |
 | `--cell-height` | 문자 셀 높이 | `14` |
 | `--chars` | 사용자 문자 팔레트 | 기본 팔레트 |
-| `--background` | PNG 배경색 | 자동 |
-| `--foreground` | 일반 PNG 글자색 | 자동 |
-| `--transparent` | PNG 배경 투명 처리 | 꺼짐 |
+| `--background` | PNG 배경색, `--transparent`와 함께 사용 불가 | 자동 |
+| `--foreground` | 일반 PNG 글자색, `--color`와 함께 사용 불가 | 자동 |
+| `--transparent` | PNG 배경 투명 처리, `--background`와 함께 사용 불가 | 꺼짐 |
 | `--image-width` | PNG 너비 | 자동 |
 | `--image-height` | PNG 높이 | 자동 |
 
