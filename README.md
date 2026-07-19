@@ -1,6 +1,6 @@
 # Picture ASCII
 
-**English** | [한국어](i18n/README.ko.md) | [日本語](i18n/README.ja.md) | [简体中文](i18n/README.zh-CN.md) | [Español](i18n/README.es.md) | [Français](i18n/README.fr.md)
+**English** | [한국어](i18n/README.ko.md) | [日本語](i18n/README.ja.md) | [Español](i18n/README.es.md) | [Français](i18n/README.fr.md)
 
 A Python program that converts images into ASCII characters.
 
@@ -24,8 +24,6 @@ Python 3.10 or later is required.
 ```bash
 pip install pictureascii
 ```
-
-This command will be available after the package is published to PyPI.
 
 For local development, run this command from the project root:
 
@@ -56,6 +54,8 @@ pictureascii picture.png --color --color-scale 0.8
 
 Color terminal output works best in a terminal with 24-bit ANSI color support, such as Windows Terminal or PowerShell.
 
+`--color-scale` requires `--color`.
+
 ## PNG Export
 
 ```bash
@@ -72,13 +72,27 @@ picture_color.png   # --color --save-image
 ```
 
 The TXT file contains plain ASCII characters without ANSI color codes.
+PNG-specific options require `--save-image`.
+
+## Terminal Aspect Ratio
+
+Use `--terminal-ratio` to adjust the character aspect ratio in terminal and
+TXT output. The shorter `--ratio` name remains available and behaves
+identically.
+
+```bash
+pictureascii picture.png --terminal-ratio 0.6
+```
+
+This setting does not control saved PNG proportions. PNG output uses its
+configured character cell size.
 
 ## Cell Size
 
 The default size of one ASCII character cell in a PNG is `10x14px`.
 
 ```bash
-pictureascii picture.png --cell-width 8 --cell-height 12 --save-image
+pictureascii picture.png --cell-width 8 --cell-height 12 --image-font-size 10 --save-image
 ```
 
 Unless explicit PNG dimensions are provided, the size is calculated as follows:
@@ -110,7 +124,8 @@ Colors accept `#RGB` or `#RRGGBB` values.
 pictureascii picture.png --background "#101820" --foreground "#F2AA4C" --save-image
 ```
 
-`--foreground` controls text color for plain PNG output. With `--color`, each character uses the source image's RGB color.
+`--foreground` controls text color for plain PNG output. It cannot be combined
+with `--color`, because colored output uses the source image's RGB values.
 
 ## Transparent Background
 
@@ -118,6 +133,8 @@ pictureascii picture.png --background "#101820" --foreground "#F2AA4C" --save-im
 pictureascii picture.png --transparent --save-image
 pictureascii picture.png --color --transparent --save-image
 ```
+
+`--transparent` cannot be combined with `--background`.
 
 ## PNG Dimensions
 
@@ -144,18 +161,18 @@ pictureascii picture.png --color --width 180 --chars "@%#*+=-:. " --cell-width 1
 | `image` | Path to the source image | Required |
 | `-w`, `--width` | Number of output columns | `120` |
 | `-o`, `--output` | TXT output path | Source name with `.txt` |
-| `--ratio` | Terminal character aspect-ratio correction | `0.5` |
+| `--ratio`, `--terminal-ratio` | Terminal and TXT character aspect-ratio correction | `0.5` |
 | `--invert`, `--no-invert` | Invert character brightness | Enabled |
 | `--color` | Apply source RGB colors to characters | Disabled |
-| `--color-scale` | Color brightness multiplier | `1.0` |
+| `--color-scale` | Color brightness multiplier; requires `--color` | `1.0` |
 | `--save-image` | Save the current output mode as PNG | Disabled |
-| `--image-font-size` | Legacy PNG renderer font size | `14` |
+| `--image-font-size` | Font size used in saved PNG files | `14` |
 | `--cell-width` | Character cell width | `10` |
 | `--cell-height` | Character cell height | `14` |
 | `--chars` | Character palette | Built-in palette |
-| `--background` | PNG background color | Automatic |
-| `--foreground` | Plain PNG text color | Automatic |
-| `--transparent` | Use a transparent PNG background | Disabled |
+| `--background` | PNG background color; incompatible with `--transparent` | Automatic |
+| `--foreground` | Plain PNG text color; incompatible with `--color` | Automatic |
+| `--transparent` | Use a transparent PNG background; incompatible with `--background` | Disabled |
 | `--image-width` | PNG width | Automatic |
 | `--image-height` | PNG height | Automatic |
 
@@ -170,12 +187,6 @@ You can also run the package as a module:
 ```bash
 python -m pictureascii picture.png --color
 ```
-
-PNG-only options such as `--cell-width`, `--background`, and
-`--image-width` require `--save-image`. `--color-scale` requires `--color`,
-and `--foreground` cannot be combined with `--color` because colored output
-uses the source image's RGB values. `--background` cannot be combined with
-`--transparent`.
 
 ## Development And Release
 
