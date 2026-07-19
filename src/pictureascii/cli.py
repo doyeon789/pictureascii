@@ -386,19 +386,6 @@ def render_ascii_image(
 
     font, is_truetype_font = load_monospace_font(font_size)
 
-    if target_size and max_columns and lines:
-        left, top, right, bottom = font.getbbox("M")
-        base_width = (right - left) or max(1, font_size * 0.6)
-        base_height = (bottom - top) or font_size
-        target_cell_width = target_size[0] / max_columns
-        target_cell_height = target_size[1] / len(lines)
-        font_scale = min(
-            target_cell_width / (base_width + character_padding * 2),
-            target_cell_height / (base_height + character_padding * 2),
-        )
-        scaled_font_size = max(1, round(font_size * font_scale))
-        font, is_truetype_font = load_monospace_font(scaled_font_size)
-
     if not is_truetype_font:
         print(
             "Warning: no monospace system font was found. Rendering with "
@@ -738,10 +725,13 @@ def create_parser() -> ArgumentParser:
 
     parser.add_argument(
         "--ratio",
+        "--terminal-ratio",
+        dest="ratio",
         type=float,
         default=CHAR_ASPECT_RATIO,
         help=(
-            "Character aspect-ratio correction factor "
+            "Terminal and TXT character aspect-ratio correction factor; "
+            "saved PNG proportions use the configured character cell size "
             f"(default: {CHAR_ASPECT_RATIO})."
         ),
     )
@@ -767,7 +757,7 @@ def create_parser() -> ArgumentParser:
     parser.add_argument(
         "--color-scale",
         type=float,
-        default=DEFAULT_COLOR_SCALE,
+        default=None,
         help=(
             "Color brightness multiplier. 1.0 preserves the source colors; "
             "0.8 makes them 20%% darker "
@@ -787,9 +777,9 @@ def create_parser() -> ArgumentParser:
     parser.add_argument(
         "--image-font-size",
         type=int,
-        default=DEFAULT_IMAGE_FONT_SIZE,
+        default=None,
         help=(
-            "Base font size used to render saved PNG files "
+            "Font size used to render saved PNG files "
             f"(default: {DEFAULT_IMAGE_FONT_SIZE})."
         ),
     )
@@ -797,14 +787,14 @@ def create_parser() -> ArgumentParser:
     parser.add_argument(
         "--cell-width",
         type=int,
-        default=DEFAULT_CHARACTER_CELL_WIDTH,
+        default=None,
         help=f"Character cell width in saved PNG files (default: {DEFAULT_CHARACTER_CELL_WIDTH}).",
     )
 
     parser.add_argument(
         "--cell-height",
         type=int,
-        default=DEFAULT_CHARACTER_CELL_HEIGHT,
+        default=None,
         help=f"Character cell height in saved PNG files (default: {DEFAULT_CHARACTER_CELL_HEIGHT}).",
     )
 
@@ -853,6 +843,68 @@ def main() -> None:
     parser = create_parser()
     args = parser.parse_args()
 
+    png_only_options = []
+
+    if args.image_font_size is not None:
+        png_only_options.append("--image-font-size")
+    if args.cell_width is not None:
+        png_only_options.append("--cell-width")
+    if args.cell_height is not None:
+        png_only_options.append("--cell-height")
+    if args.background:
+        png_only_options.append("--background")
+    if args.foreground:
+        png_only_options.append("--foreground")
+    if args.transparent:
+        png_only_options.append("--transparent")
+    if args.image_width is not None:
+        png_only_options.append("--image-width")
+    if args.image_height is not None:
+        png_only_options.append("--image-height")
+
+    if png_only_options and not args.save_image:
+        option_label = ", ".join(png_only_options)
+        requirement = "requires" if len(png_only_options) == 1 else "require"
+        parser.error(
+            f"{option_label} {requirement} --save-image"
+        )
+
+    if args.foreground and args.color:
+        parser.error(
+            "--foreground cannot be used with --color because colored output "
+            "uses the source image's RGB values"
+        )
+
+    if args.background and args.transparent:
+        parser.error(
+            "--background cannot be used with --transparent because the "
+            "background is fully transparent"
+        )
+
+    if args.color_scale is not None and not args.color:
+        parser.error("--color-scale requires --color")
+
+    color_scale = (
+        args.color_scale
+        if args.color_scale is not None
+        else DEFAULT_COLOR_SCALE
+    )
+    image_font_size = (
+        args.image_font_size
+        if args.image_font_size is not None
+        else DEFAULT_IMAGE_FONT_SIZE
+    )
+    cell_width = (
+        args.cell_width
+        if args.cell_width is not None
+        else DEFAULT_CHARACTER_CELL_WIDTH
+    )
+    cell_height = (
+        args.cell_height
+        if args.cell_height is not None
+        else DEFAULT_CHARACTER_CELL_HEIGHT
+    )
+
     output_path = (
         Path(args.output)
         if args.output
@@ -885,12 +937,12 @@ def main() -> None:
             char_aspect_ratio=args.ratio,
             invert=args.invert,
             color=args.color,
-            color_scale=args.color_scale,
+            color_scale=color_scale,
             save_image=args.save_image,
-            image_font_size=args.image_font_size,
+            image_font_size=image_font_size,
             characters=args.chars,
-            cell_width=args.cell_width,
-            cell_height=args.cell_height,
+            cell_width=cell_width,
+            cell_height=cell_height,
             image_width=args.image_width,
             image_height=args.image_height,
             background_color=background_color,

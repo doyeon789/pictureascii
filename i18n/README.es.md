@@ -1,6 +1,6 @@
 # Picture ASCII
 
-[English](../README.md) | [한국어](README.ko.md) | [日本語](README.ja.md) | [简体中文](README.zh-CN.md) | **Español** | [Français](README.fr.md)
+[English](../README.md) | [한국어](README.ko.md) | [日本語](README.ja.md) | **Español** | [Français](README.fr.md)
 
 Un programa en Python que convierte imágenes en caracteres ASCII.
 
@@ -49,18 +49,31 @@ pictureascii picture.png --color --save-image
 ```
 
 Para la salida en color se recomienda un terminal compatible con color ANSI de 24 bits. El archivo TXT no contiene códigos de color ANSI.
+`--color-scale` requiere `--color`. Las opciones específicas de PNG requieren `--save-image`.
+
+## Proporción de caracteres del terminal
+
+`--terminal-ratio` ajusta la proporción de los caracteres en la salida del terminal y TXT. El nombre corto existente `--ratio` sigue disponible y funciona de la misma forma.
+
+```bash
+pictureascii picture.png --terminal-ratio 0.6
+```
+
+Esta opción no controla la proporción del PNG guardado. La salida PNG utiliza el tamaño de celda configurado.
 
 ## Personalización
 
 ```bash
 pictureascii picture.png --chars "@%#*+=-:. "
-pictureascii picture.png --cell-width 8 --cell-height 12 --save-image
+pictureascii picture.png --cell-width 8 --cell-height 12 --image-font-size 10 --save-image
 pictureascii picture.png --background "#101820" --foreground "#F2AA4C" --save-image
 pictureascii picture.png --color --transparent --save-image
 pictureascii picture.png --image-width 1200 --image-height 800 --save-image
 ```
 
 La izquierda de la paleta representa las zonas oscuras y la derecha las claras. Los colores aceptan `#RGB` o `#RRGGBB`. Si solo se indica una dimensión PNG, la otra se calcula con la proporción original.
+
+`--image-font-size` establece el tamaño de fuente real dentro de cada celda. Utiliza un valor adecuado para la celda para evitar caracteres recortados o superpuestos. `--foreground` no se puede combinar con `--color`, y `--background` no se puede combinar con `--transparent`.
 
 ## Opciones
 
@@ -69,15 +82,17 @@ La izquierda de la paleta representa las zonas oscuras y la derecha las claras. 
 | `image` | Ruta de la imagen de entrada | Obligatorio |
 | `-w`, `--width` | Número de columnas de salida | `120` |
 | `-o`, `--output` | Ruta del TXT | Nombre original + `.txt` |
-| `--ratio` | Corrección de proporción del carácter | `0.5` |
+| `--ratio`, `--terminal-ratio` | Corrección de proporción para terminal y TXT | `0.5` |
 | `--invert`, `--no-invert` | Invierte el brillo de los caracteres | Activado |
 | `--color` | Aplica los colores RGB originales | Desactivado |
-| `--color-scale` | Multiplicador de brillo del color | `1.0` |
+| `--color-scale` | Multiplicador de brillo; requiere `--color` | `1.0` |
 | `--save-image` | Guarda un PNG | Desactivado |
+| `--image-font-size` | Tamaño de fuente utilizado en el PNG | `14` |
 | `--cell-width`, `--cell-height` | Ancho y alto de la celda | `10`, `14` |
 | `--chars` | Paleta de caracteres | Integrada |
-| `--background`, `--foreground` | Fondo y texto del PNG | Automático |
-| `--transparent` | Usa fondo PNG transparente | Desactivado |
+| `--background` | Fondo PNG; incompatible con `--transparent` | Automático |
+| `--foreground` | Texto del PNG normal; incompatible con `--color` | Automático |
+| `--transparent` | Fondo PNG transparente; incompatible con `--background` | Desactivado |
 | `--image-width`, `--image-height` | Ancho y alto del PNG | Automático |
 
 ```bash
